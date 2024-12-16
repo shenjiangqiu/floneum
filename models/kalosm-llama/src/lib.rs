@@ -50,7 +50,8 @@ pub use kalosm_common::*;
 use kalosm_language_model::ChatMarkers;
 use llm_samplers::types::Sampler;
 pub use source::*;
-use std::sync::{Arc, Mutex};
+use tracing::info;
+use std::{path::Path, sync::{Arc, Mutex}};
 use tokenizers::Tokenizer;
 
 /// A prelude of commonly used items in kalosm-llama.
@@ -158,6 +159,8 @@ impl Llama {
                                     }
                                 }
                                 Task::RunSync { callback } => {
+                                    let inner_pinter = &inner as *const LlamaModel;
+                                    info!("Running sync callback with inner: {inner_pinter:?}");
                                     callback(&mut inner).await;
                                 }
                             }
@@ -192,6 +195,8 @@ impl Llama {
             .unwrap();
         Ok(receiver)
     }
+
+    fn save_kv_cache(&self,kv_cache_path:&Path){}
 }
 
 /// A builder with configuration for a Llama model.

@@ -81,7 +81,10 @@ impl LlamaModel {
         if tokens.is_empty() {
             return Err(anyhow::anyhow!("Cannot run model on empty input"));
         }
-
+        // println!("forward!cache: {}",cache.is_none());
+        // if let Some(cache) = &cache {
+        //     cache.print();
+        // }
         let logits = model.forward(tokens, device, cache)?;
 
         let logits = logits.squeeze(0)?.to_dtype(DType::F32)?;
@@ -175,5 +178,9 @@ impl LlamaModel {
         )?;
 
         Ok(())
+    }
+    /// get kv cacche
+    pub fn get_kv_cache(&self)->LlamaCache{
+        self.cache.clone()
     }
 }

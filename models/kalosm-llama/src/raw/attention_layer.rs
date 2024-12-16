@@ -1,3 +1,5 @@
+use std::sync::atomic::AtomicUsize;
+
 use super::rope::RopeCache;
 use super::silu::fast_cpu_silu;
 use candle_core::{quantized::QMatMul, Module, Tensor};
@@ -274,6 +276,11 @@ impl LlamaAttention {
         start_pos: usize,
         cache: Option<&mut KvCache>,
     ) -> candle_core::Result<Tensor> {
+        // println!("att!");
+        // if let Some(cache) = &cache {
+        //     let k = cache.cache().current_seq_len();
+        //     println!("current len: {k}");
+        // }
         let bsz = hidden_states.dims()[0];
         let q_len = hidden_states.dims()[1];
         let hidden_size = self.hidden_size;
@@ -316,9 +323,17 @@ impl LlamaAttention {
         }
 
         attn_weights = candle_nn::ops::softmax_last_dim(&attn_weights)?;
-
+        let device = attn_weights.device();
+        // println!("device: {:?}", device);
+        // println!("we got attn weights!!!");
+        // println!("attn_weights: {:?}", attn_weights);
         let mut attn_output = attn_weights.matmul(&value_states)?;
+        // static NAME_COUNT: AtomicUsize = AtomicUsize::new(0);
 
+        // let current_count = NAME_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        // attn_weights
+        //     .save_safetensors("attscore", format!("{}.safetensors", current_count))
+        //     .unwrap();
         if attn_output.dims() != [bsz, num_heads, q_len, head_dim] {
             return Err(candle_core::Error::Msg(format!(
                 "`attn_output` should be of size {:?}, but is {:?}",

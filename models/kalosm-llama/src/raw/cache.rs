@@ -13,7 +13,8 @@ const CONCAT_DIMENSION: usize = 2;
 pub struct LlamaCache {
     max_seq_len: usize,
     pub(crate) tokens: Vec<u32>,
-    pub(crate) blocks: Vec<KvCache>,
+    /// all blocks
+    pub blocks: Vec<KvCache>,
 }
 
 impl LlamaCache {
@@ -28,6 +29,18 @@ impl LlamaCache {
             max_seq_len,
             tokens: Vec::new(),
             blocks,
+        }
+    }
+    /// print cache info
+    pub fn print(&self) {
+        println!("blocks: {}", self.blocks.len());
+        let block0 = &self.blocks[0];
+        let cache = block0.cache();
+        let len = cache.current_seq_len();
+        let k = cache.k().unwrap();
+        let v = cache.v().unwrap();
+        if let Some(k) = k {
+            println!("len: {}, k_dims: {:?}", len, k.dims());
         }
     }
 
